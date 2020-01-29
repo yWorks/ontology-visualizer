@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ontology Visualizer [yFiles Use Case]</title>
+
+  <link type="text/css" rel="stylesheet" href="dist/lib.css">
+
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="shortcut icon" type="image/x-icon" sizes="any" href="favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      background-color: #343a408f;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #graph {
+      flex: 1;
+    }
+
+    @media (max-width: 460px) {
+      #github-icon {
+        display: none;
+      }
+    }
+
+    @media (max-width: 405px) {
+      #info-icon {
+        display: none;
+      }
+    }
+
+    .ref-icon {
+      vertical-align: middle;
+      color: #ffffff;
+      margin: 5px;
+      font-family: Roboto, sans-serif;
+    }
+
+    .ref-icon img {
+      cursor: pointer;
+      width: 32px;
+      margin-right: 5px;
+    }
+
+    .modal-header {
+      border-bottom: none;
+    }
+
+    @media (min-width: 576px) {
+      .modal-dialog {
+        max-width: 600px;
+      }
+    }
+
+    .ylogo {
+      height: 60px;
+      float: left;
+      margin-right: 10px;
+    }
+
+    .ylogo-container {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      margin-top: 3em;
+    }
+
+    .logo-link {
+      margin: 0 auto;
+    }
+
+    .logo-link:hover {
+      text-decoration: none;
+    }
+
+    .logo-image {
+      height: 100px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: bold;
+      margin-left: 16px;
+      color: #242265;
+    }
+
+    a {
+      color: #337ab7;
+      text-decoration: none;
+    }
+
+
+    .popupContent {
+      position: absolute;
+      display: none; /* during runtime, the display value is overridden by class HTMLPopupSupport */
+      border: 2px solid darkorange;
+      border-radius: 15px;
+      padding: 15px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .85);
+      opacity: 0; /* will be faded in */
+      transition: opacity 0.2s ease-in;
+      min-width: 300px;
+      font-size: 12px
+    }
+
+    #nodePopupContent {
+      padding-bottom: 25px;
+    }
+
+    #edgePopupContent {
+      min-width: 400px;
+      max-width: 600px;
+    }
+
+    #edgePopupContent svg {
+      font-size: 2.2em;
+      width: 100%;
+      height: 100%;
+    }
+
+    #edgePopupContent svg line {
+      stroke: black;
+      stroke-width: 3px;
+    }
+
+    #edgePopupContent svg polygon {
+      fill: black;
+    }
+
+    #edgePopupContent text[data-id="linkName"] {
+      font-weight: bold;
+    }
+
+    #edgePopupContent a:hover {
+      fill: #0056b3;
+    }
+
+    .popupContent.popupContentClone {
+      transition: opacity 0.2s ease-out;
+    }
+
+
+    .popupContentRight {
+      position: relative;
+      float: left;
+      top: 10px;
+      width: 180px;
+      height: 100%;
+      display: inline-block;
+    }
+
+    .popup-link {
+      text-decoration: none;
+      color: black;
+
+    }
+
+    .yfiles-node-highlight-template,
+    .yfiles-edge-highlight-template,
+    .yfiles-label-highlight-template,
+    .yfiles-port-highlight-template {
+      stroke: #5fd163;
+      stroke-linejoin: round;
+      stroke-dasharray: none;
+      stroke-width: 2;
+    }
+
+    .overview-container {
+      display: none;
+    }
+
+    #overviewComponent {
+      height: 250px;
+      position: absolute;
+      width: 250px;
+      z-index: 250;
+      background-color: #343a40;
+      overflow: hidden;
+      right: 15px;
+    }
+
+    .prop-link {
+      color: dimgrey;
+      font-size: smaller;
+      overflow-wrap: break-spaces;
+    }
+
+    .text-truncate {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-title {
+      margin: 10px 0;
+      font-weight: 600;
+      color: steelblue;
+    }
+
+    @media (max-width: 576px) {
+      .modal-dialog.modal-dialog-slideout {
+        width: 80%
+      }
+    }
+
+    .modal-dialog-slideout {
+      min-height: 100%;
+      margin: 0 auto 0 0;
+      background: #fff;
+    }
+
+    .modal.fade .modal-dialog.modal-dialog-slideout {
+      -webkit-transform: translate(-100%, 0);
+      transform: translate(-100%, 0);
+    }
+
+    .modal.fade.show .modal-dialog.modal-dialog-slideout {
+      -webkit-transform: translate(0, 0);
+      transform: translate(0, 0);
+      flex-flow: column;
+    }
+
+    .modal-dialog-slideout .modal-content {
+      border: 0;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<div class="modal fade" id="detailsPanel" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel3"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-slideout" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailsPanel-title"></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="section-title">Data properties</div>
+        <div id="dataProp-list" class="row">
+
+        </div>
+        <div class="section-title">Object properties</div>
+        <div id="objProp-list" class="row">
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <a class="navbar-brand" href="https://www.yworks.com" target="_blank">
+    <img src="assets/logo-yFiles.svg" height="30" class="d-inline-block align-top" alt="yFiles logo">
+    <span style="color:whitesmoke; margin: 0 20px 0 10px;" data-toggle="modal" data-target="#infoModal" onclick="return false"> Ontology Visualizer</span>
+  </a>
+  <div class="d-flex order-lg-1 ml-auto pr-2">
+    <ul class="navbar-nav flex-row">
+      <li class="nav-item mx-2 mx-lg-0" id="info-icon">
+        <span class="ref-icon" data-toggle="modal" data-target="#infoModal">
+          <img src="assets/info_icon.svg" alt="Open Info Dialog"/>
+        </span>
+      </li>
+      <li class="nav-item" id="github-icon">
+        <span class="ref-icon">
+        <a href="https://github.com/yWorks/ontology-visualizer" target="_blank">
+          <svg width="32" height="32" viewBox="0 0 16 16" version="1.1" aria-hidden="true"><path fill="#FFFFFF" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        </a>
+      </span>
+      </li>
+    </ul>
+  </div>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav mr-auto">
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">
+          View
+        </a>
+
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a id="navFit" class="dropdown-item" href="#">Fit</a>
+          <a id="navOverview" class="dropdown-item" href="#">Toggle Overview</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarLayout" role="button" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">
+          Layout
+        </a>
+
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a id="navHierarchic" class="dropdown-item" href="#">Hierarchic</a>
+          <a id="navCircular" class="dropdown-item" href="#">Circular</a>
+          <a id="navOrganic" class="dropdown-item" href="#">Organic</a>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <div class="form-inline mx-4 my-2 my-lg-0">
+          <input id="search-stuff" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div id="graphOverviewComponent" class="overview-container">
+  <div id="overviewComponent"></div>
+</div>
+<div id="graph">
+  <div id="nodePopupContent" class="popupContent" tabindex="0">
+
+    <div class="popupContentRight">
+      <span class="fa fa-dice-d6" style="float:left; color: darkorange"></span>
+      <div data-id="name" style=" font-size:14px;font-weight:bold;margin-left: 15px; "><span></span><span></span></div>
+
+      <div data-id="id" style="width:300px;margin-top: 15px"><span
+        style=" margin-top:11px; color: darkorange">Uri: </span><a class="popup-link" target="_blank"></a></div>
+      <div data-id="parentName" style="width:300px;margin: 5px 0 15px 0;"><span
+        style=" margin-top:11px; color: darkorange">Parent: </span><span></span></div>
+      <div style="border-top:1px solid grey; width:270px; padding: 10px 0;">
+        <a style=" margin-top:11px; color: steelblue; font-weight: 600;" href="#" id="openPanel">
+          Details
+        </a>
+      </div>
+    </div>
+  </div>
+  <div id="edgePopupContent" class="popupContent" style="text-align: center" tabindex="0">
+    <svg viewBox="0 0 800 100">
+      <line x1="220" y1="45" x2="580" y2="45"></line>
+      <polygon points="580,45 570,40, 570,50"></polygon>
+      <text x="200" y="22" data-id="sourceName" text-anchor="end"></text>
+      <a target="_blank">
+        <text x="400" y="7" data-id="linkName" text-anchor="middle"></text>
+      </a>
+      <text x="600" y="22" data-id="targetName" text-anchor="start"></text>
+    </svg>
+  </div>
+</div>
+
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a href="https://www.yworks.com/products/yfiles-for-html" target="_blank" class="logo-link">
+          <img src="assets/logo-yFiles-about.svg" alt="yFiles for HTML Logo" class="logo-image"/>
+          <span class="logo-text">Ontology Visualizer</span>
+        </a>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="info">
+          <p>
+            This is the sample application for the yFiles use case about an
+            <a href="https://www.yworks.com/use-case/ontology-visualizer">Ontology Visualizer</a>.
+          </p>
+          <p>
+            This application is powered by
+            <a href="https://www.yworks.com/products/yfiles-for-html" target="_blank">yFiles for HTML</a>,
+            the powerful diagramming library.
+          </p>
+          <p>
+            You can learn more about the many features that come with
+            <a href="https://www.yworks.com/products/yfiles" target="_blank">yFiles</a>
+            on the
+            <a href="https://www.yworks.com/products/yfiles/features" target="_blank"
+            >yFiles Features Overview</a
+            >.
+          </p>
+          <p>
+            If you want to try it for yourself, you can obtain a free evaluation version of yFiles in the
+            <a href="https://my.yworks.com/signup?product=YFILES_HTML_EVAL" target="_blank"
+            >yWorks Evaluation Center</a
+            >.
+          </p>
+          <p>
+            Want to know how this app is made? Take a look at the source code on <a
+            href="https://github.com/yWorks/ontology-visualizer" target="_blank">github.com/yWorks</a>.
+          </p>
+        </div>
+        <div class="ylogo-container">
+          <img src="assets/yworks-logo.svg" alt="yWorks logo" class="ylogo"/>
+          <div>
+            <a href="https://www.yworks.com/" target="_blank">https://www.yworks.com</a>
+            <div style="margin-top: 5px;">© 2019 yWorks GmbH, All rights reserved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/yfiles-template">
+  <g id="classTemplate">
+    <circle r="23" fill="white" stroke="orange" stroke-width="2" transform="translate(25 25)"></circle>
+  </g>
+</script>
+
+<script src="dist/lib.js"></script>
+<script src="dist/app.js"></script>
+
+</body>
+</html>

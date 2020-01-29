@@ -1,0 +1,52 @@
+{
+  "name": "ontology-visualizer-for-yfiles-for-html",
+  "description": "The sample app for the yFiles use case Ontology Visualizer",
+  "homepage": "https://www.yworks.com/use-case/ontology-visualizer",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "preinstall": "cd ../yFiles-for-HTML-Complete-2.2.0.3-Evaluation/ && npm pack lib/es-modules/",
+    "postinstall": "node copy-license.js",
+    "loadData": "node loadData",
+    "service": "node ./service",
+    "app": "webpack-dev-server --mode development --port 3000 --open",
+    "duo": "run-p service app",
+    "start": "run-s loadData duo",
+    "prettier": "prettier --write **/*.{js,json,ts,css}"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.10.1",
+    "bootstrap": "^4.3.1",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "ejs": "~2.6.1",
+    "express": "~4.16.1",
+    "faker": "^4.1.0",
+    "http-errors": "~1.6.3",
+    "jquery": "^3.4.1",
+    "leveldown": "^5.1.1",
+    "lodash": "^4.17.15",
+    "morgan": "~1.9.1",
+    "n3": "^1.1.1",
+    "npm-run-all": "^4.1.5",
+    "popper.js": "^1.15.0",
+    "prettier": "^1.19.1",
+    "quadstore": "^5.1.0",
+    "yfiles": "../yFiles-for-HTML-Complete-2.2.0.3-Evaluation/yfiles-22.0.3-eval.tgz"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "@babel/polyfill": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@yworks/optimizer": "^0.1.12",
+    "babel-loader": "^8.0.5",
+    "css-loader": "^2.1.1",
+    "mini-css-extract-plugin": "^0.5.0",
+    "mocha": "^6.2.0",
+    "should": "^13.2.3",
+    "webpack": "^4.22.0",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  }
+}
