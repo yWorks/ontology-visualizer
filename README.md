@@ -9,7 +9,7 @@ The app displays a sample ontology diagram that you can explore.
 
 ## See also
 
-* [Watch the introductory video](https://www.youtube.com/channel/UC6GqOEPI6Xrhy4ylDKHP0Aw) of this app
+* [Watch the introductory video](https://player.vimeo.com/video/389490579) of this app
 * [Try the app online](https://live.yworks.com/demos/use-case/ontology-visualizer)
 * [Read the article](https://www.yworks.com/use-case/ontology-visualizer) about an _Ontology Visualizer_
 * [Learn more about yFiles](https://www.yworks.com/products/yfiles), the software library for visualizing, editing, and analyzing graphs
