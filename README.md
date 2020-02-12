@@ -3,7 +3,7 @@
 ![A screenshot of this sample application](doc/screenshot.png)
 
 This repository contains the sample application for the yFiles use case about
-an [Ontology Visualizer](https://www.yworks.com/use-case/ontology-visualizer).
+an [Ontology Visualizer](https://www.yworks.com/use-case/visualizing-an-ontology).
 The app displays a sample ontology diagram that you can explore.
 
 
