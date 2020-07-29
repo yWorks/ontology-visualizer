@@ -159,9 +159,15 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# Temporary merge files from mercurial
+*.orig
+
+# package lock files
+package-lock.json
+yarn.lock
+
 app/dist/
 app/yfiles/
 license.json
-yfiles-typeinfo.js
 live/
 /database

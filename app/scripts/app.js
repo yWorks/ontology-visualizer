@@ -294,18 +294,14 @@ class App {
   }
 
   async assembleGraph(data) {
-    const builder = new GraphBuilder({
-      nodesSource: data.nodes,
-      edgesSource: data.links,
-      sourceNodeBinding: edge => edge.from,
-      targetNodeBinding: edge => edge.to,
-      graph: this.graphComponent.graph
-    })
+    const builder = new GraphBuilder(this.graphComponent.graph)
+    builder.createNodesSource({ data: data.nodes, id: null })
+    builder.createEdgesSource({ data: data.links, sourceId: 'from', targetId: 'to' })
     builder.addNodeCreatedListener((sender, args) => {
       sender.graph.addLabel(args.item, this.toShortForm(args.item.tag))
     })
     this.graphComponent.graph = builder.buildGraph()
-    builder.buildGraph()
+
     this.layoutHierarchic()
     this.graphComponent.fitContent()
   }
@@ -354,9 +350,11 @@ class App {
   }
 
   layoutCircular() {
-    const circularLayout = new CircularLayout()
-    circularLayout.partitionStyle = 'disk'
-    return this.runLayout(circularLayout)
+    return this.runLayout(
+      new CircularLayout({
+        partitionStyle: 'disk'
+      })
+    )
   }
 
   layoutOrganic() {
@@ -376,14 +374,13 @@ class App {
   }
 
   runLayout(layout) {
-    layout = new CenterPortsLayoutStage(layout)
-    return this.graphComponent.morphLayout(layout)
+    return this.graphComponent.morphLayout(new CenterPortsLayoutStage(layout))
   }
 
   zoomToLocation(item) {
     const location = this.getFocusPoint(item)
 
-    this.graphComponent.zoomToAnimated(location, /*this.graphComponent.zoom*/ 1.5)
+    this.graphComponent.zoomToAnimated(location, 1.5)
     // display the popup info as well
     this.updateNodePopupContent(this.nodePopup, item)
     this.nodePopup.currentItem = item
@@ -392,7 +389,7 @@ class App {
   /**
    * Returns the point corresponding to the given INode.
    * @param item a node
-   * @returns {Point|alignCenter|Point|YPoint|number}
+   * @returns {Point}
    */
   getFocusPoint(item) {
     if (IEdge.isInstance(item)) {

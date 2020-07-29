@@ -42,17 +42,3 @@ fs.copyFile(licenseFile, path.join(destDir, 'license.json'), err => {
     console.log(`\nyFiles license was copied from '${licenseFile}'.`)
   }
 })
-
-const typeinfoFile = path.join(
-  demosDir,
-  path.dirname(yFilesTarFile),
-  'ide-support',
-  'yfiles-typeinfo.js'
-)
-fs.copyFile(typeinfoFile, path.join(destDir, 'yfiles-typeinfo.js'), err => {
-  if (err) {
-    console.log(`\nyfiles-typeinfo.js was NOT copied from '${typeinfoFile}'.`)
-  } else {
-    console.log(`\nyfiles-typeinfo.js was copied from '${typeinfoFile}'.`)
-  }
-})

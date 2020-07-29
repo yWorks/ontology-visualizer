@@ -2,11 +2,11 @@
 const path = require('path')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const YFilesOptimizerPlugin = require('@yworks/optimizer/webpack-plugin')
-// const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+const yWorksOptimizer = require('@yworks/optimizer/webpack-plugin')
+
 const config = {
   entry: {
-    app: ['@babel/polyfill', path.resolve('app/scripts/app.js')]
+    app: ['core-js/stable', 'regenerator-runtime/runtime', path.resolve('app/scripts/app.js')]
   },
 
   output: {
@@ -27,11 +27,12 @@ const config = {
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader']
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        sideEffects: true
       },
       {
-        test: /\.svg$/,
-        use: 'file-loader'
+        test: /\.(png|svg|jpg|gif)$/,
+        use: ['file-loader']
       }
     ]
   },
@@ -63,8 +64,6 @@ module.exports = function(env, options) {
   console.log('Running webpack...')
 
   if (options.mode === 'development') {
-    config.entry.app.unshift(path.resolve('app/yfiles/yfiles-typeinfo.js'))
-
     config.devServer = {
       contentBase: [path.join(__dirname, './app')],
       compress: true,
@@ -82,9 +81,11 @@ module.exports = function(env, options) {
   }
 
   if (options.mode === 'production') {
+    // Obfuscate yFiles modules and usages for production build
     config.plugins.unshift(
-      new YFilesOptimizerPlugin({
-        logLevel: 'info'
+      new yWorksOptimizer({
+        logLevel: 'info',
+        blacklist: []
       })
     )
   }
