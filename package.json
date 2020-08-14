@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "preinstall": "cd ../yFiles-for-HTML-Complete-2.3.0.1-Evaluation/ && npm pack lib/es-modules/",
+    "preinstall": "cd ../yFiles-for-HTML-Complete-2.3.0.2-Evaluation/ && npm pack lib/es-modules/",
     "postinstall": "node copy-license.js",
     "loadData": "node loadData",
     "service": "node ./service",
@@ -35,7 +35,7 @@
     "prettier": "^1.19.1",
     "regenerator-runtime": "^0.13.7",
     "quadstore": "^5.2.0",
-    "yfiles": "../yFiles-for-HTML-Complete-2.3.0.1-Evaluation/yfiles-23.0.1-eval.tgz"
+    "yfiles": "../yFiles-for-HTML-Complete-2.3.0.2-Evaluation/yfiles-23.0.2-eval.tgz"
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
