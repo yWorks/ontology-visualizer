@@ -32,7 +32,7 @@ if (!fs.existsSync(destDir)) {
   fs.mkdirSync(destDir)
 }
 
-fs.copyFile(licenseFile, path.join(destDir, 'license.json'), err => {
+fs.copyFile(licenseFile, path.join(destDir, 'license.json'), (err) => {
   if (err) {
     console.log(
       `\nyFiles license was NOT copied from '${licenseFile}'.` +

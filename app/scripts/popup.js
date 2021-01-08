@@ -5,7 +5,7 @@ import {
   IModelItem,
   Point,
   SimpleLabel,
-  Size
+  Size,
 } from 'yfiles'
 
 /**

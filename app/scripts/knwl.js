@@ -22,7 +22,7 @@ export default class Knwl {
       url: `${this.url}getClass`,
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({ name: className, includeProps: includeProps })
+      data: JSON.stringify({ name: className, includeProps: includeProps }),
     })
   }
 
@@ -32,7 +32,7 @@ export default class Knwl {
   getSimplifiedOntologyGraph() {
     return $.ajax({
       url: `${this.url}getSimplifiedOntologyGraph`,
-      method: 'GET'
+      method: 'GET',
     })
   }
 }

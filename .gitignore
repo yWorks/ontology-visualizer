@@ -171,3 +171,5 @@ app/yfiles/
 license.json
 live/
 /database
+/dist/
+src/assets/yfiles/

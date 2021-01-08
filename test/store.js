@@ -4,9 +4,9 @@ const OntologyStore = require('../knwl/store')
 const faker = require('faker')
 const store = new OntologyStore(faker.internet.url())
 const schema = require('../knwl/ontology').Schema
-describe('OntologyStore', function() {
+describe('OntologyStore', function () {
   describe('addClass', () => {
-    it('should add a class', async function() {
+    it('should add a class', async function () {
       const className = faker.random.uuid()
       const parentClassName = faker.lorem.word()
       await store.addClass(className, parentClassName)
@@ -17,7 +17,7 @@ describe('OntologyStore', function() {
   })
 
   describe('getObjectPropertyQuads', () => {
-    it('should get the shipCrew quads', async function() {
+    it('should get the shipCrew quads', async function () {
       // getting the shipCrew props from dbpedia
       const ns = store.rootId
       store.rootId = 'http://dbpedia.org'

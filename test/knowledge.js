@@ -12,10 +12,10 @@ const schema = require('../knwl/ontology').Schema
 
 const rootId = faker.internet.url()
 const knowledge = new Knowledge(rootId)
-describe('Knowledge', function() {
+describe('Knowledge', function () {
   this.timeout(150000)
   describe('addClass', () => {
-    it('should add a class', async function() {
+    it('should add a class', async function () {
       const className = faker.random.uuid()
       const classId = schema.toUri(rootId, className)
       const cls = await knowledge.addClass(className)
@@ -29,7 +29,7 @@ describe('Knowledge', function() {
   })
 
   describe('addObjectProperty', () => {
-    it('should add a new property', async function() {
+    it('should add a new property', async function () {
       const propertyName = faker.random.uuid()
       const domainName = faker.random.uuid()
       const rangeName = faker.random.uuid()
@@ -37,7 +37,7 @@ describe('Knowledge', function() {
       const def = {
         name: propertyName,
         domain: domainName,
-        range: rangeName
+        range: rangeName,
       }
       const prop1 = await knowledge.addObjectProperty(def)
 
@@ -53,14 +53,14 @@ describe('Knowledge', function() {
   })
 
   describe('addDatatypeProperty', () => {
-    it('should add a new property', async function() {
+    it('should add a new property', async function () {
       const propertyName = faker.random.uuid()
       const domainName = faker.random.uuid()
       const rangeName = faker.random.uuid()
       const propId = schema.toUri(rootId, propertyName)
       const def = {
         name: propertyName,
-        domain: domainName
+        domain: domainName,
       }
       const prop1 = await knowledge.addDatatypeProperty(def)
 
@@ -76,7 +76,7 @@ describe('Knowledge', function() {
   })
 
   describe('getClass', () => {
-    it('should get the class', async function() {
+    it('should get the class', async function () {
       const className = faker.random.uuid()
       const classId = schema.toUri(rootId, className)
       const cl1 = await knowledge.addClass(className)
@@ -88,7 +88,7 @@ describe('Knowledge', function() {
   })
 
   describe('getAllClassUris', () => {
-    it('should get only own classes', async function() {
+    it('should get only own classes', async function () {
       const className = faker.random.uuid()
       const classId = schema.toUri(rootId, className)
       // add in-namespace class
@@ -100,18 +100,18 @@ describe('Knowledge', function() {
       const all = await knowledge.getAllClassUris(false)
       const own = await knowledge.getAllClassUris(true)
 
-      let found = _.find(own, s => s === classId.id)
+      let found = _.find(own, (s) => s === classId.id)
       should(found).be.ok()
       // external should not be there
-      found = _.find(own, s => s === node.id)
+      found = _.find(own, (s) => s === node.id)
       should(found).not.be.ok()
       // but should be in the full collection
-      found = _.filter(all, s => s === node.id)
+      found = _.filter(all, (s) => s === node.id)
       should(found.length).be.exactly(1)
     })
   })
   describe('loadData', () => {
-    it('should import DbPedia', async function() {
+    it('should import DbPedia', async function () {
       await knowledge.clear()
       let count = await knowledge.countTriples()
       should(count).be.exactly(0)
@@ -123,7 +123,7 @@ describe('Knowledge', function() {
   })
 
   describe('getSimplifiedObjectProperties', () => {
-    it('should return the DbPedia object props', async function() {
+    it('should return the DbPedia object props', async function () {
       // let's take dbpedia since the testing namespace might not have any
       const ns = knowledge.rootId
       knowledge.rootId = 'http://dbpedia.org/'
@@ -135,7 +135,7 @@ describe('Knowledge', function() {
   })
 
   describe('getDataPropertyUrisOfClass', () => {
-    it('should return the data props', async function() {
+    it('should return the data props', async function () {
       // let's take dbpedia since the testing namespace might not have any
       const ns = knowledge.rootId
       knowledge.rootId = 'http://dbpedia.org/'
@@ -147,7 +147,7 @@ describe('Knowledge', function() {
     })
   })
   describe('getObjectPropertyUrisOfClass', () => {
-    it('should return the object props', async function() {
+    it('should return the object props', async function () {
       // let's take dbpedia since the testing namespace might not have any
       const ns = knowledge.rootId
       knowledge.rootId = 'http://dbpedia.org/'

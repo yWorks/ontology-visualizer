@@ -15,7 +15,7 @@ export class LODLabelStyleRenderer extends DefaultLabelStyleRenderer {
     if (!(visual instanceof SvgVisualGroup)) {
       return visual
     }
-    const rectVisual = visual.children.find(v => v.svgElement.tagName === 'rect')
+    const rectVisual = visual.children.find((v) => v.svgElement.tagName === 'rect')
     rectVisual.svgElement.setAttribute('rx', '7px')
     return visual
   }

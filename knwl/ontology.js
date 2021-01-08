@@ -13,13 +13,13 @@ QuadType = {
   Comment: 'Comment',
   Other: 'Other',
   Thing: 'Thing',
-  A: 'A'
+  A: 'A',
 }
 OntologyType = {
   Class: 'Class',
   DatatypeProperty: 'DatatypeProperty',
   ObjectProperty: 'ObjectProperty',
-  Other: 'Other'
+  Other: 'Other',
 }
 
 SpecialUri = {
@@ -36,7 +36,7 @@ SpecialUri = {
   comment: 'http://www.w3.org/2000/01/rdf-schema#comment',
   domain: 'http://www.w3.org/2000/01/rdf-schema#domain',
   range: 'http://www.w3.org/2000/01/rdf-schema#range',
-  literal: 'http://www.w3.org/2000/01/rdf-schema#literal'
+  literal: 'http://www.w3.org/2000/01/rdf-schema#literal',
 }
 
 SpecialNodes = {
@@ -53,7 +53,7 @@ SpecialNodes = {
   comment: namedNode(SpecialUri.comment),
   domain: namedNode(SpecialUri.domain),
   range: namedNode(SpecialUri.range),
-  literal: namedNode(SpecialUri.literal)
+  literal: namedNode(SpecialUri.literal),
 }
 
 Schema = {
@@ -178,7 +178,7 @@ Schema = {
           this.toUri(rootId, className),
           this.commentNode,
           literal(_.isNil(comment) ? '' : comment)
-        )
+        ),
       ]
     } else {
       return [
@@ -197,7 +197,7 @@ Schema = {
           this.toUri(rootId, className),
           this.commentNode,
           literal(_.isNil(comment) ? '' : comment)
-        )
+        ),
       ]
     }
   },
@@ -213,14 +213,14 @@ Schema = {
         this.toUri(rootUri, propertyName),
         this.commentNode,
         literal(_.isNil(comment) ? '' : comment)
-      )
+      ),
     ]
     if (_.isString(domain)) {
       result.push(
         quad(this.toUri(rootUri, propertyName), this.domainNode, this.toUri(rootUri, domain))
       )
     } else if (_.isArray(domain)) {
-      domain.forEach(d => {
+      domain.forEach((d) => {
         result.push(
           quad(this.toUri(rootUri, propertyName), this.domainNode, this.toUri(rootUri, d))
         )
@@ -241,14 +241,14 @@ Schema = {
         this.toUri(rootUri, propertyName),
         this.commentNode,
         literal(_.isNil(comment) ? '' : comment)
-      )
+      ),
     ]
     if (_.isString(domain)) {
       result.push(
         quad(this.toUri(rootUri, propertyName), this.domainNode, this.toUri(rootUri, domain))
       )
     } else if (_.isArray(domain)) {
-      domain.forEach(d => {
+      domain.forEach((d) => {
         result.push(
           quad(this.toUri(rootUri, propertyName), this.domainNode, this.toUri(rootUri, d))
         )
@@ -259,7 +259,7 @@ Schema = {
         quad(this.toUri(rootUri, propertyName), this.rangeNode, this.toUri(rootUri, range))
       )
     } else if (_.isArray(range)) {
-      range.forEach(r => {
+      range.forEach((r) => {
         result.push(quad(this.toUri(rootUri, propertyName), this.rangeNode, this.toUri(rootUri, r)))
       })
     }
@@ -269,7 +269,7 @@ Schema = {
   getClassDetailsFromQuads(rootUri, quadArray) {
     const OntologyClass = require('./index').OntologyClass
     const def = OntologyClass.serializationTemplate
-    let foundQuad = _.find(quadArray, a => a.predicate === this.aNode)
+    let foundQuad = _.find(quadArray, (a) => a.predicate === this.aNode)
     if (!_.isNil(foundQuad)) {
       if (foundQuad.object !== this.owlClassNode) {
         if (foundQuad.object === this.objectPropertyNode)
@@ -283,16 +283,16 @@ Schema = {
     } else {
       throw new Error('Given quads do not define an ontology element.')
     }
-    foundQuad = _.find(quadArray, a => a.predicate === this.subClassOfNode)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.subClassOfNode)
     if (!_.isNil(foundQuad)) {
       def.parentId = foundQuad.object.id
       def.parentName = this.toShortForm(rootUri, foundQuad.object)
     }
-    foundQuad = _.find(quadArray, a => a.predicate === this.labelNode)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.labelNode)
     if (!_.isNil(foundQuad)) {
       def.label = foundQuad.object.value
     }
-    foundQuad = _.find(quadArray, a => a.predicate === this.comment)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.comment)
     if (!_.isNil(foundQuad)) {
       def.label = foundQuad.object.value
     }
@@ -302,7 +302,7 @@ Schema = {
   getObjectPropertyDetailsFromQuads(rootUri, quadArray) {
     const OntologyObjectProperty = require('./index').OntologyObjectProperty
     const def = OntologyObjectProperty.serializationTemplate
-    let foundQuad = _.find(quadArray, a => a.predicate === this.aNode)
+    let foundQuad = _.find(quadArray, (a) => a.predicate === this.aNode)
     if (!_.isNil(foundQuad)) {
       if (foundQuad.object !== this.objectPropertyNode) {
         if (foundQuad.object === this.owlClassNode)
@@ -319,20 +319,20 @@ Schema = {
       throw new Error('Given quads do not define an ontology element.')
     }
 
-    foundQuad = _.filter(quadArray, a => a.predicate === this.domainNode)
+    foundQuad = _.filter(quadArray, (a) => a.predicate === this.domainNode)
     if (!_.isNil(foundQuad)) {
-      def.domainIds = foundQuad.map(q => q.object.id)
+      def.domainIds = foundQuad.map((q) => q.object.id)
     }
-    foundQuad = _.filter(quadArray, a => a.predicate === this.rangeNode)
+    foundQuad = _.filter(quadArray, (a) => a.predicate === this.rangeNode)
     if (!_.isNil(foundQuad)) {
-      def.rangeIds = foundQuad.map(q => q.object.id)
+      def.rangeIds = foundQuad.map((q) => q.object.id)
     }
 
-    foundQuad = _.find(quadArray, a => a.predicate === this.labelNode)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.labelNode)
     if (!_.isNil(foundQuad)) {
       def.label = foundQuad.object.value
     }
-    foundQuad = _.find(quadArray, a => a.predicate === this.comment)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.comment)
     if (!_.isNil(foundQuad)) {
       def.label = foundQuad.object.value
     }
@@ -342,7 +342,7 @@ Schema = {
   getDatatypePropertyDetailsFromQuads(rootUri, quadArray) {
     const OntologyDataProperty = require('./index').OntologyDataProperty
     const def = OntologyDataProperty.serializationTemplate
-    let foundQuad = _.find(quadArray, a => a.predicate === this.aNode)
+    let foundQuad = _.find(quadArray, (a) => a.predicate === this.aNode)
     if (!_.isNil(foundQuad)) {
       if (foundQuad.object !== this.datatypePropertyNode) {
         if (foundQuad.object === this.owlClassNode)
@@ -359,16 +359,16 @@ Schema = {
       throw new Error('Given quads do not define an ontology element.')
     }
 
-    foundQuad = _.filter(quadArray, a => a.predicate === this.domainNode)
+    foundQuad = _.filter(quadArray, (a) => a.predicate === this.domainNode)
     if (!_.isNil(foundQuad)) {
-      def.domainIds = foundQuad.map(q => q.object.id)
+      def.domainIds = foundQuad.map((q) => q.object.id)
     }
 
-    foundQuad = _.find(quadArray, a => a.predicate === this.labelNode)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.labelNode)
     if (!_.isNil(foundQuad)) {
       def.label = foundQuad.object.value
     }
-    foundQuad = _.find(quadArray, a => a.predicate === this.comment)
+    foundQuad = _.find(quadArray, (a) => a.predicate === this.comment)
     if (!_.isNil(foundQuad)) {
       def.label = foundQuad.object.value
     }
@@ -380,7 +380,7 @@ Schema = {
    * @param q presumably a quad
    * @returns {string}
    */
-  getQuadType: function(q) {
+  getQuadType: function (q) {
     if (_.isNil(q)) {
       throw new Error('Missing argument in getQuadType.')
     }
@@ -414,7 +414,7 @@ Schema = {
     if (!_.isArray(quadArray)) {
       throw new Error('getOntologyTypeOfQuads argument should be an array of quads.')
     }
-    const found = _.filter(quadArray, a => a.predicate === SpecialNodes.a)
+    const found = _.filter(quadArray, (a) => a.predicate === SpecialNodes.a)
     if (found.length !== 1) {
       return OntologyType.Other
     }
@@ -454,7 +454,7 @@ Schema = {
     } else if (uri instanceof dataFactory.internal.NamedNode) {
       return this.toShortForm(rootId, uri.id)
     } else if (_.isArray(uri)) {
-      uri.map(u => this.toShortForm(u))
+      uri.map((u) => this.toShortForm(u))
     } else if (uri instanceof dataFactory.internal.Literal) {
       return uri.value
     } else {
@@ -570,11 +570,11 @@ Schema = {
           comment: faker.lorem.paragraph(),
           parentUri: parent.toUri(root, parentName),
           parentName: parentName,
-          root: root
+          root: root,
         }
         return {
           details: def,
-          quads: parent.getClassQuads(root, def.name, def.parentName, def.label, def.comment)
+          quads: parent.getClassQuads(root, def.name, def.parentName, def.label, def.comment),
         }
       },
       get datatypePropertyQuads() {
@@ -585,14 +585,14 @@ Schema = {
           faker.lorem.words(4),
           faker.lorem.paragraph()
         )
-      }
+      },
     }
-  }
+  },
 }
 module.exports = {
   Schema,
   SpecialNodes,
   SpecialUri,
   QuadType,
-  OntologyType
+  OntologyType,
 }

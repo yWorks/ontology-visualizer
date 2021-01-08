@@ -13,10 +13,10 @@ const schema = require('../knwl/ontology').Schema
 
 const rootId = faker.internet.url()
 const knowledge = new Knowledge(rootId)
-describe('Elements', function() {
+describe('Elements', function () {
   this.timeout(15000)
   describe('OntologyClass', () => {
-    it('serialize', async function() {
+    it('serialize', async function () {
       const className = faker.lorem.word()
       const cl = new OntologyClass(rootId, className)
       const obj = cl.toJson()

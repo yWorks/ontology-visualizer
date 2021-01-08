@@ -139,20 +139,20 @@ class Knowledge {
       if (_.isNil(dataProps) || dataProps.length === 0) {
         cls.dataProperties = []
       } else {
-        cls.dataProperties = dataProps.map(d => {
+        cls.dataProperties = dataProps.map((d) => {
           return {
             name: schema.toShortForm(this.rootId, d),
-            uri: d
+            uri: d,
           }
         })
       }
       if (_.isNil(objectProps) || objectProps.length === 0) {
         cls.objectProperties = []
       } else {
-        cls.objectProperties = objectProps.map(d => {
+        cls.objectProperties = objectProps.map((d) => {
           return {
             name: schema.toShortForm(this.rootId, d),
-            uri: d
+            uri: d,
           }
         })
       }
@@ -393,7 +393,7 @@ class OntologyElement {
       name: null,
       id: null,
       label: null,
-      comment: null
+      comment: null,
     }
   }
 }
@@ -451,7 +451,7 @@ class OntologyClass extends OntologyElement {
         parentId: null,
         parentName: null,
         dataProperties: [],
-        objectProperties: []
+        objectProperties: [],
       },
       super.serializationTemplate
     )
@@ -495,7 +495,7 @@ class OntologyDataProperty extends OntologyElement {
     return _.extend(
       {
         rangeIds: null,
-        domainIds: null
+        domainIds: null,
       },
       super.serializationTemplate
     )
@@ -540,7 +540,7 @@ class OntologyObjectProperty extends OntologyElement {
     return _.extend(
       {
         rangeIds: null,
-        domainIds: null
+        domainIds: null,
       },
       super.serializationTemplate
     )
@@ -551,5 +551,5 @@ module.exports = {
   OntologyClass,
   OntologyDataProperty,
   OntologyObjectProperty,
-  Knowledge
+  Knowledge,
 }

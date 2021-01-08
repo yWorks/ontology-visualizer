@@ -44,7 +44,7 @@ import {
   TemplateNodeStyle,
   TextRenderSupport,
   TextWrapping,
-  YPoint
+  YPoint,
 } from 'yfiles'
 import lic from '../yfiles/license.json'
 import { LODLabelStyleRenderer } from './lodlabelstyle'
@@ -74,7 +74,7 @@ class GraphOverviewVisualCreator extends GraphOverviewCanvasVisualCreator {
     ctx.strokeStyle = '#f7f7f7'
     ctx.beginPath()
     ctx.moveTo(edge.sourcePort.location.x, edge.sourcePort.location.y)
-    edge.bends.forEach(bend => {
+    edge.bends.forEach((bend) => {
       ctx.lineTo(bend.location.x, bend.location.y)
     })
     ctx.lineTo(edge.targetPort.location.x, edge.targetPort.location.y)
@@ -120,7 +120,7 @@ class App {
     this.graphComponent.graph.edgeDefaults.style = new PolylineEdgeStyle({
       stroke: Stroke.WHITE_SMOKE,
       targetArrow: 'white medium triangle',
-      smoothingLength: 10
+      smoothingLength: 10,
     })
 
     this.graphComponent.graph.nodeDefaults.labels.style = new DefaultLabelStyle({
@@ -128,7 +128,7 @@ class App {
       backgroundFill: 'rgba(255,255,255,0.9)',
       textFill: '#636363',
       font: `12px ${defaultFontFamily}`,
-      insets: new Insets(4)
+      insets: new Insets(4),
     })
     this.graphComponent.graph.nodeDefaults.labels.layoutParameter = FreeNodeLabelModel.INSTANCE.createParameter(
       new Point(0.5, 1),
@@ -139,7 +139,7 @@ class App {
     this.initializeInputMode()
     this.initializePopups()
     this.initializeInteractions()
-    this.knwl.getSimplifiedOntologyGraph().then(async data => {
+    this.knwl.getSimplifiedOntologyGraph().then(async (data) => {
       await this.assembleGraph(data)
     })
 
@@ -214,14 +214,14 @@ class App {
       key: Key.ESCAPE,
       execute: (command, parameter, source) => {
         source.currentItem = null
-      }
+      },
     })
   }
 
   updateNodePopupContent(nodePopup, /*INode*/ node) {
     // get business data from node tag
     const id = node.tag
-    this.knwl.getClass(id).then(data => {
+    this.knwl.getClass(id).then((data) => {
       // get all divs in the pop-up
       const divs = nodePopup.div.getElementsByTagName('div')
       for (let i = 0; i < divs.length; i++) {
@@ -287,7 +287,7 @@ class App {
       }
       return uri
     } else if (_.isArray(uri)) {
-      uri.map(u => this.toShortForm(u))
+      uri.map((u) => this.toShortForm(u))
     } else {
       return uri.toString()
     }
@@ -314,7 +314,7 @@ class App {
     const mode = new GraphViewerInputMode({
       toolTipItems: GraphItemTypes.NODE,
       selectableItems: GraphItemTypes.NODE | GraphItemTypes.EDGE,
-      marqueeSelectableItems: GraphItemTypes.NONE
+      marqueeSelectableItems: GraphItemTypes.NONE,
     })
 
     mode.mouseHoverInputMode.toolTipLocationOffset = new Point(10, 10)
@@ -337,7 +337,7 @@ class App {
       if (item) {
         highlightIndicatorManager.addHighlight(item)
         if (INode.isInstance(item)) {
-          this.graphComponent.graph.edgesAt(item).forEach(edge => {
+          this.graphComponent.graph.edgesAt(item).forEach((edge) => {
             highlightIndicatorManager.addHighlight(edge)
           })
         } else if (IEdge.isInstance(item)) {
@@ -352,7 +352,7 @@ class App {
   layoutCircular() {
     return this.runLayout(
       new CircularLayout({
-        partitionStyle: 'disk'
+        partitionStyle: 'disk',
       })
     )
   }
@@ -360,7 +360,7 @@ class App {
   layoutOrganic() {
     return this.runLayout(
       new OrganicLayout({
-        preferredEdgeLength: 200
+        preferredEdgeLength: 200,
       })
     )
   }
@@ -368,7 +368,7 @@ class App {
   layoutHierarchic() {
     return this.runLayout(
       new HierarchicLayout({
-        considerNodeLabels: true
+        considerNodeLabels: true,
       })
     )
   }
@@ -443,7 +443,7 @@ class App {
     $('#navHierarchic').click(() => {
       this.layoutHierarchic()
     })
-    $('#search-stuff').keypress(e => {
+    $('#search-stuff').keypress((e) => {
       if (e.which === 13) {
         const term = $('#search-stuff').val()
         $('#search-stuff').val('')
@@ -481,7 +481,7 @@ class App {
       objList.empty()
       $('#detailsPanel-title').html(this.toShortForm(uri))
       if (cls.objectProperties.length > 0) {
-        cls.objectProperties.forEach(p => {
+        cls.objectProperties.forEach((p) => {
           objList.append(
             `<div class="col-md-5 offset-col-md-2 text-truncate"><a class="prop-link" href="${p.uri}" target="_blank">${p.name}</a></div>`
           )
@@ -494,7 +494,7 @@ class App {
       const dataList = $('#dataProp-list')
       dataList.empty()
       if (cls.dataProperties.length > 0) {
-        cls.dataProperties.forEach(p => {
+        cls.dataProperties.forEach((p) => {
           dataList.append(
             `<div class="col-md-5 offset-col-md-2 text-truncate"><a class="prop-link" href="${p.uri}" target="_blank">${p.name}</a></div>`
           )
@@ -517,7 +517,7 @@ class CenterPortsLayoutStage extends LayoutStageBase {
   applyLayout(graph) {
     this.applyLayoutCore(graph)
 
-    graph.edges.forEach(edge => {
+    graph.edges.forEach((edge) => {
       graph.getLayout(edge).sourcePoint = YPoint.ORIGIN
       graph.getLayout(edge).targetPoint = YPoint.ORIGIN
     })

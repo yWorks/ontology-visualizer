@@ -63,10 +63,10 @@ class OntologyStore {
     return new Promise((resolve, reject) => {
       this.store
         .removeMatches(null, null, null)
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err)
         })
-        .on('end', q => {
+        .on('end', (q) => {
           console.log('The store has been emptied.')
           resolve()
         })
@@ -176,7 +176,7 @@ class OntologyStore {
           result.push({
             uri: k,
             from: from,
-            to: to
+            to: to,
           })
         }
       }
@@ -242,12 +242,12 @@ class OntologyStore {
       const domainQuads = await this.getQuads({ subject: node, predicate: SpecialNodes.domain })
       let domains = []
       if (!_.isNil(domainQuads)) {
-        domains = domainQuads.map(q => q.object.id)
+        domains = domainQuads.map((q) => q.object.id)
       }
       const rangeQuads = await this.getQuads({ subject: node, predicate: SpecialNodes.range })
       let ranges = []
       if (!_.isNil(rangeQuads)) {
-        ranges = rangeQuads.map(q => q.object.id)
+        ranges = rangeQuads.map((q) => q.object.id)
       }
       const label = includeCommentAndLabel ? await this.getFirstLabel(node) : null
       const comment = includeCommentAndLabel ? await this.getFirstComment(node) : null
@@ -275,7 +275,7 @@ class OntologyStore {
       const domainQuads = await this.getQuads({ subject: node, predicate: SpecialNodes.domain })
       let domains = []
       if (!_.isNil(domainQuads)) {
-        domains = domainQuads.map(q => q.object.id)
+        domains = domainQuads.map((q) => q.object.id)
       }
       const label = includeCommentAndLabel ? await this.getFirstLabel(node) : null
       const comment = includeCommentAndLabel ? await this.getFirstComment(node) : null
@@ -333,7 +333,7 @@ class OntologyStore {
         if (_.isNil(domQuads)) {
           continue
         }
-        domQuads.forEach(q => {
+        domQuads.forEach((q) => {
           if (q.object.id === classId) {
             classProps.add(propUri)
           }
@@ -370,7 +370,7 @@ class OntologyStore {
         if (_.isNil(domQuads)) {
           continue
         }
-        domQuads.forEach(q => {
+        domQuads.forEach((q) => {
           if (q.object.id === classId) {
             classProps.add(propUri)
           }
@@ -384,12 +384,12 @@ class OntologyStore {
     return new Promise(async (resolve, reject) => {
       const quads = await this.getQuads({
         predicate: SpecialNodes.a,
-        object: SpecialNodes.owlDatatypeProperty
+        object: SpecialNodes.owlDatatypeProperty,
       })
       if (_.isNil(quads)) {
         resolve([])
       } else {
-        resolve(quads.map(q => q.subject.id))
+        resolve(quads.map((q) => q.subject.id))
       }
     })
   }
@@ -398,12 +398,12 @@ class OntologyStore {
     return new Promise(async (resolve, reject) => {
       const quads = await this.getQuads({
         predicate: SpecialNodes.a,
-        object: SpecialNodes.owlObjectProperty
+        object: SpecialNodes.owlObjectProperty,
       })
       if (_.isNil(quads)) {
         resolve([])
       } else {
-        resolve(quads.map(q => q.subject.id))
+        resolve(quads.map((q) => q.subject.id))
       }
     })
   }
@@ -496,13 +496,13 @@ class OntologyStore {
       const found = []
       this.store
         .match(node, SpecialNodes.a, SpecialNodes.owlClass)
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err)
         })
-        .on('data', quad => {
+        .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', q => {
+        .on('end', (q) => {
           resolve(found.length > 0)
         })
     })
@@ -515,13 +515,13 @@ class OntologyStore {
       const found = []
       this.store
         .match(node, SpecialNodes.a, SpecialNodes.owlObjectProperty)
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err)
         })
-        .on('data', quad => {
+        .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', q => {
+        .on('end', (q) => {
           resolve(found.length > 0)
         })
     })
@@ -534,13 +534,13 @@ class OntologyStore {
       const found = []
       this.store
         .match(node, SpecialNodes.a, SpecialNodes.owlDatatypeProperty)
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err)
         })
-        .on('data', quad => {
+        .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', q => {
+        .on('end', (q) => {
           resolve(found.length > 0)
         })
     })
@@ -570,13 +570,13 @@ class OntologyStore {
       const found = []
       this.store
         .match(uri, SpecialNodes.a, null)
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err)
         })
-        .on('data', quad => {
+        .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', q => {
+        .on('end', (q) => {
           switch (found.length) {
             case 0:
               resolve(null)
@@ -600,20 +600,20 @@ class OntologyStore {
     if (onlyConnected) {
       const links = await this.getSimplifiedObjectProperties(onlyOwn)
       const nodes = new Set()
-      links.forEach(l => {
+      links.forEach((l) => {
         nodes.add(l.from)
         nodes.add(l.to)
       })
       return {
         nodes: Array.from(nodes),
-        links: links
+        links: links,
       }
     } else {
       const nodes = await this.getClassUris(onlyOwn)
       const links = await this.getSimplifiedObjectProperties(onlyOwn)
       return {
         nodes: nodes,
-        links: links
+        links: links,
       }
     }
   }
