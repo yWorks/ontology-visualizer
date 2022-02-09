@@ -1,4 +1,3 @@
-import 'yfiles/yfiles.css'
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/js/fontawesome'
@@ -130,11 +129,12 @@ class App {
       font: `12px ${defaultFontFamily}`,
       insets: new Insets(4),
     })
-    this.graphComponent.graph.nodeDefaults.labels.layoutParameter = FreeNodeLabelModel.INSTANCE.createParameter(
-      new Point(0.5, 1),
-      new Point(0, 0),
-      new Point(0.5, 0.5)
-    )
+    this.graphComponent.graph.nodeDefaults.labels.layoutParameter =
+      FreeNodeLabelModel.INSTANCE.createParameter(
+        new Point(0.5, 1),
+        new Point(0, 0),
+        new Point(0.5, 0.5)
+      )
 
     this.initializeInputMode()
     this.initializePopups()
