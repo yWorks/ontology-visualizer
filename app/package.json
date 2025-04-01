@@ -1,0 +1,19 @@
+{
+  "name": "ontology-visualizer-app",
+  "description": "The sample app for the yFiles use case Ontology Visualizer",
+  "homepage": "https://www.yworks.com/use-case/ontology-visualizer",
+  "version": "2.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "postinstall": "node copy-license.js",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@yfiles/yfiles": "../../yFiles-for-HTML-Complete-3.0-Evaluation/lib/yfiles-30.0.0+eval.tgz"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2",
+    "vite": "^6.2.4"
+  }
+}

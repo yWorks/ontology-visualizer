@@ -1,0 +1,19 @@
+{
+  "name": "ontology-database",
+  "version": "2.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.6.0",
+    "classic-level": "^2.0.0",
+    "n3": "^1.24.2",
+    "ontology-database": "^2.0.0",
+    "quadstore": "^15.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.1"
+  }
+}

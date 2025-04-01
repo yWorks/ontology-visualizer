@@ -1,15 +1,17 @@
-const createError = require('http-errors')
-const express = require('express')
-const path = require('path')
-const cookieParser = require('cookie-parser')
-const cors = require('cors')
-const api = require('./api')
+import * as path from 'node:path'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import createError from 'http-errors'
+import express from 'express'
+import cors from 'cors'
+import api from './api.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 const port = 3001
 
@@ -20,7 +22,7 @@ app.use(function (req, res, next) {
   next(createError(404))
 })
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
   // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error = req.app.get('env') === 'development' ? err : {}
@@ -31,4 +33,4 @@ app.use(function (err, req, res, next) {
 })
 app.listen(port, () => console.log(`Listening on port ${port}!`))
 
-module.exports = app
+export default app

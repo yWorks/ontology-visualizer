@@ -12,7 +12,7 @@ The app displays a sample ontology diagram that you can explore.
 - [Read the article](https://www.yworks.com/use-case/visualizing-an-ontology) about an _Ontology Visualizer_
 - [Learn more about yFiles](https://www.yworks.com/products/yfiles), the software library for visualizing, editing, and analyzing graphs
 
-If you have any questions or suggestions, send us an email at [consulting@yworks.com](mailto:consulting@yworks.com)
+If you have any questions or suggestions, email us at [consulting@yworks.com](mailto:consulting@yworks.com)
 or call [+49 7071 9709050](tel:+4970719709050).
 
 ## How to run this app
@@ -26,19 +26,21 @@ Checkout this project, then extract the yFiles for HTML package to a directory n
 ```
 documents
  |-- ontology-visualizer
- |-- yFiles-for-HTML-Complete-2.4.0.5-Evaluation
+ |-- yFiles-for-HTML-Complete-3.0-Evaluation
 ```
 
-Afterwards, enter the `ontology-visualizer` directory and run the usual commands
+Afterward, enter the `ontology-visualizer` directory and run the usual commands
 
 ```
-npm i
+npm install
 ```
 
 followed by
 
 ```
-npm start
+npm run load-data
+npm run start-server
+npm run dev
 ```
 
 ## About
@@ -57,7 +59,7 @@ If you want to try it for yourself, obtain a free test version of yFiles in the
 
 ## Contact
 
-If you have any questions or suggestions, send us an email at [consulting@yworks.com](mailto:consulting@yworks.com)
+If you have any questions or suggestions, email us at [consulting@yworks.com](mailto:consulting@yworks.com)
 or call [+49 7071 9709050](tel:+4970719709050).
 
 ## Data
@@ -68,7 +70,7 @@ The app shows data from [DBpedia](http://dbpedia.org/ontology/)
 
 The MIT License (MIT)
 
-Copyright (c) 2022 yWorks GmbH
+Copyright (c) yWorks GmbH
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

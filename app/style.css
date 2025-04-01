@@ -1,0 +1,361 @@
+html, body {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #343a408f;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#graph {
+  flex: 1;
+}
+
+@media (max-width: 460px) {
+  #github-icon {
+    display: none;
+  }
+}
+
+@media (max-width: 405px) {
+  #info-icon {
+    display: none;
+  }
+}
+
+.ref-icon {
+  vertical-align: middle;
+  color: #ffffff;
+  font-family: Roboto, sans-serif;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin:0;
+}
+
+.ref-icon img {
+  cursor: pointer;
+  width: 32px;
+  margin-right: 5px;
+}
+
+.navbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* Space between items */
+  align-items: center; /* Vertically center items */
+  background-color: #343a40; /* Dark background color */
+  color: white; /* Light text color */
+  width: 100%; /* Full width */
+}
+
+.navbar-left {
+  display: flex;
+  flex-direction: row;
+  margin-left: 10px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center; /* Center logo and title vertically */
+  color: whitesmoke; /* Title color */
+  text-decoration: none; /* Remove default link styles */
+  font-family: Roboto, sans-serif;
+  font-size: 1.25rem;
+  margin: 0 1rem 0 10px;
+}
+
+.brand-title {
+  margin-left: 10px; /* Space between logo and title */
+
+}
+
+.navbar-icons {
+  display: flex;
+  align-items: center; /* Center icons vertically */
+  margin: 0 10px 0 0;
+}
+
+.nav-links {
+  display: flex; /* Use flexbox for nav links */
+  list-style: none; /* Remove bullet points */
+  padding: 0;
+}
+
+.nav-item {
+  margin: 0 5px 0 0; /* Margin between items */
+}
+
+.dropdown {
+  margin-right: 0.5rem;
+}
+
+.dropdown-content {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 5px;
+}
+
+.dropdown-content button {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  text-align: left;
+  display: block;
+  font-family: Roboto, sans-serif;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+}
+
+.dropdown-content button:hover {
+  background-color: #e8e8e8;
+}
+
+.dropdown:hover .dropdown-content {
+  display: flex;
+}
+
+.navbar-dropdown {
+  display: flex;
+  align-items: center; /* Center dropdown items vertically */
+}
+
+.dropbtn {
+  color: #ffffffbf;
+  font-size: 1rem;
+  background-color: transparent;
+  border: none;
+}
+
+.dropbtn:hover {
+  color: white;
+}
+
+.dropdown-menu {
+  display: none; /* Initially hide dropdowns */
+  position: absolute; /* Position absolute for dropdowns */
+  background: #343a40; /* Same as navbar background */
+  border-radius: 5px; /* Rounded corners for dropdowns */
+  z-index: 100; /* Ensure dropdown appears above content */
+}
+
+.dropdown-list {
+  display: flex;
+  flex-direction: column; /* Stack dropdown items vertically */
+}
+
+.dropdown-item {
+  padding: 10px;
+  color: white; /* Item text color */
+  text-decoration: none; /* Remove default link styles */
+}
+.dropdown-item:hover {
+  background-color: #495057; /* Darker background on hover */
+}
+
+.search-form {
+  display: flex;
+  align-items: center; /* Center search input vertically */
+}
+
+.search-form input {
+  padding: 5px; /* Padding for the input box */
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border-bottom: none;
+  margin-bottom: 2em;
+}
+
+.modal-header a {
+  display: flex;
+  align-items: center;
+}
+
+.modal {
+  padding: 2em;
+  border: none;
+  border-radius: 5px;
+  font-family: Montserrat, Roboto, sans-serif;
+  line-height: 1.5em;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: 600px;
+  }
+}
+
+.ylogo {
+  height: 60px;
+  float: left;
+  margin-right: 10px;
+}
+
+.ylogo-container {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  margin-top: 3em;
+}
+
+.logo-link {
+  margin: 0 auto;
+}
+
+.logo-link:hover {
+  text-decoration: none;
+}
+
+.logo-image {
+  height: 100px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: 16px;
+  color: #242265;
+}
+
+a {
+  color: #337ab7;
+  text-decoration: none;
+}
+
+
+.popupContent {
+  position: absolute;
+  display: none; /* during runtime, the display value is overridden by class HTMLPopupSupport */
+  border: 2px solid darkorange;
+  border-radius: 15px;
+  padding: 15px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .85);
+  opacity: 0; /* will be faded in */
+  transition: opacity 0.2s ease-in;
+  min-width: 300px;
+  font-size: large;
+}
+
+#nodePopupContent {
+  padding-bottom: 25px;
+}
+
+#edgePopupContent {
+  min-width: 400px;
+  max-width: 600px;
+}
+
+#edgePopupContent svg {
+  font-size: 2.2em;
+  width: 100%;
+  height: 100%;
+}
+
+#edgePopupContent svg line {
+  stroke: black;
+  stroke-width: 3px;
+}
+
+#edgePopupContent svg polygon {
+  fill: black;
+}
+
+#edgePopupContent text[data-id="linkName"] {
+  font-weight: bold;
+}
+
+#edgePopupContent a:hover {
+  fill: #0056b3;
+}
+
+.popupContent.popupContentClone {
+  transition: opacity 0.2s ease-out;
+}
+
+
+.popupContentRight {
+  position: relative;
+  float: left;
+  top: 10px;
+  width: 180px;
+  height: 100%;
+  display: inline-block;
+}
+
+.popup-link {
+  text-decoration: none;
+  color: black;
+
+}
+
+.yfiles-node-highlight-template,
+.yfiles-edge-highlight-template,
+.yfiles-label-highlight-template,
+.yfiles-port-highlight-template {
+  stroke: #5fd163;
+  stroke-linejoin: round;
+  stroke-dasharray: none;
+  stroke-width: 2;
+}
+
+.overview-container {
+  display: block;
+  transition: opacity 0.5s ease-in;
+}
+
+#overviewComponent {
+  height: 250px;
+  position: absolute;
+  width: 250px;
+  z-index: 250;
+  background-color: #343a40;
+  overflow: hidden;
+  right: 15px;
+}
+
+.prop-link {
+  color: dimgrey;
+  font-size: large;
+  overflow-wrap: normal;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section-title {
+  margin: 10px 0;
+  font-weight: 600;
+  color: steelblue;
+}
+
+#openPanel {
+  border: none;
+  background-color: transparent;
+  font-size: large;
+}
+
+#openPanel:hover {
+  border: none;
+  background-color: transparent;
+  text-decoration: underline;
+}

@@ -166,10 +166,10 @@ typings/
 package-lock.json
 yarn.lock
 
-app/dist/
+app/app/dist/
 app/yfiles/
 license.json
 live/
-/database
+/app/database
 /dist/
-src/assets/yfiles/
+app/assets/yfiles/

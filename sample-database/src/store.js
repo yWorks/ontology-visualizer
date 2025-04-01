@@ -1,44 +1,49 @@
-const path = require('path')
-const fs = require('fs')
-const _ = require('lodash')
-const schema = require('./ontology').Schema
-const RdfStore = require('quadstore').RdfStore
-const leveldown = require('leveldown')
-const n3 = require('n3')
-const dataFactory = n3.DataFactory
-const { quad, namedNode, literal, defaultGraph } = dataFactory
-const resultFormat = 'application/json'
-const { isNamedNode } = n3.Util
+import * as path from 'node:path'
+import { dirname } from 'node:path'
+import * as fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { Schema, SpecialNodes } from './ontology.js'
+import { Quadstore } from 'quadstore'
+import { ClassicLevel } from 'classic-level'
+import { DataFactory, StreamParser, Util } from 'n3'
+
+const { namedNode } = DataFactory
+const { isNamedNode } = Util
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 /**
  * Simplified API to manage the quadstore ontology.
  */
-class OntologyStore {
+export class OntologyStore {
   constructor(rootId) {
-    this.rootId = schema.ensureRootId(rootId)
+    this.rootId = Schema.ensureRootId(rootId)
     const dbPath = path.join(__dirname, '../database')
     if (!fs.existsSync(dbPath)) {
       fs.mkdirSync(dbPath)
     }
-    this.store = new RdfStore(leveldown(dbPath), { dataFactory })
+    this.store = new Quadstore({ backend: new ClassicLevel(dbPath), dataFactory: DataFactory })
   }
 
   /**
    * Imports the data in the triple store.
-   * @param dataPath path to an RDF, tutrle or other triple format.
+   * @param dataPath path to an RDF, turtle or other triple format.
    * @returns {*|Promise|Promise<unknown>|undefined}
    */
-  loadFileData(dataPath) {
-    if (_.isNil(dataPath)) {
+  async loadFileData(dataPath) {
+    if (!dataPath) {
       throw new Error('Missing path to data file.')
     }
     if (!fs.existsSync(dataPath)) {
       throw new Error(`File '${dataPath}' does not exist.`)
     }
-    const streamParser = new n3.StreamParser()
+    await this.store.open()
+    const streamParser = new StreamParser({ format: 'text/turtle' })
     const inputStream = fs.createReadStream(dataPath)
     try {
-      return this.store.putStream(inputStream.pipe(streamParser))
+      return this.store.putStream(inputStream.pipe(streamParser), { batchSize: 100 }).then(() => {
+        this.store.close()
+      })
     } catch (e) {
       console.error(e)
       return Promise.resolve()
@@ -47,29 +52,30 @@ class OntologyStore {
 
   /**
    * Returns the triple count.
-   * @param onlyOwn if true only counts the triples in the root namespace
-   * @returns {Promise<number>}
    */
   async countTriples() {
     // expensive wayt to do it but it's the only one
     const found = await this.getQuads({})
-    return _.isNil(found) ? 0 : found.length
+    return !found ? 0 : found.length
   }
 
   /**
    * Clears the whole store.
    */
-  clear() {
+  async clear() {
+    await this.store.open()
     return new Promise((resolve, reject) => {
       this.store
         .removeMatches(null, null, null)
         .on('error', (err) => {
           reject(err)
         })
-        .on('end', (q) => {
+        .on('end', () => {
           console.log('The store has been emptied.')
           resolve()
         })
+    }).then(() => {
+      void this.store.close()
     })
   }
 
@@ -105,9 +111,9 @@ class OntologyStore {
     //     filter += `FILTER(STRSTARTS(STR(?uri), "${this.rootId}")) `;
     // }
     // let query = `SELECT ?d ?uri ?r  WHERE {
-    //                             ?uri a <${schema.objectProperty}>;
-    //                             <${schema.domain}> ?d.
-    //                              OPTIONAL { ?uri <${schema.range}> ?ra }
+    //                             ?uri a <${Schema.objectProperty}>;
+    //                             <${Schema.domain}> ?d.
+    //                              OPTIONAL { ?uri <${Schema.range}> ?ra }
     //                              bind(coalesce(?ra, 'None') as ?r)
     //                              ${filter}
     //                             }`;
@@ -130,10 +136,10 @@ class OntologyStore {
       const q = domainQuads[i]
       const uri = q.subject.id
       const domain = q.object.id
-      if (_.isNil(domain) || (onlyOwn && !uri.startsWith(this.rootId))) {
+      if (!domain || (onlyOwn && !uri.startsWith(this.rootId))) {
         continue
       }
-      if (_.isNil(uris[uri])) {
+      if (!uris[uri]) {
         // we'll disentangle the multiple links below
         uris[uri] = { froms: new Set(), tos: new Set() }
       }
@@ -144,10 +150,10 @@ class OntologyStore {
       const q = rangeQuads[i]
       const uri = q.subject.id
       const range = q.object.id
-      if (_.isNil(range) || (onlyOwn && !uri.startsWith(this.rootId))) {
+      if (!range || (onlyOwn && !uri.startsWith(this.rootId))) {
         continue
       }
-      if (_.isNil(uris[uri])) {
+      if (!uris[uri]) {
         uris[uri] = { froms: new Set(), tos: new Set() }
       }
       uris[uri].tos.add(range)
@@ -155,7 +161,7 @@ class OntologyStore {
 
     // disentangle the arrays
     const result = []
-    _.forEach(uris, (v, k) => {
+    Object.keys(uris).forEach((k) => {
       // object properties sometimes do not define a range or domain (corrupt ontology)
       if (uris[k].froms.size === 0 || uris[k].tos.size === 0) {
         return
@@ -191,11 +197,13 @@ class OntologyStore {
    * @returns {Promise<Array>}
    */
   async getQuads(pattern) {
-    const found = await this.store.get(pattern)
-    if (_.isNil(found) || found.length === 0) {
-      return null
+    await this.store.open()
+    const { items } = await this.store.get(pattern)
+    await this.store.close()
+    if (!items || items.length === 0) {
+      return []
     }
-    return found
+    return items
   }
 
   /**
@@ -204,11 +212,11 @@ class OntologyStore {
    * @returns {Promise<string>}
    */
   async getFirstLabel(uri) {
-    if (!(uri instanceof dataFactory.internal.NamedNode)) {
-      uri = schema.toUri(this.rootId, uri)
+    if (!isNamedNode(uri)) {
+      uri = Schema.toUri(this.rootId, uri)
     }
     const found = await this.getQuads({ subject: uri, predicate: SpecialNodes.label })
-    if (_.isNil(found) || found.length === 0) {
+    if (!found || found.length === 0) {
       return null
     }
     return found[0].object.value
@@ -220,11 +228,11 @@ class OntologyStore {
    * @returns {Promise<string>}
    */
   async getFirstComment(uri) {
-    if (!(uri instanceof dataFactory.internal.NamedNode)) {
-      uri = schema.toUri(this.rootId, uri)
+    if (!isNamedNode(uri)) {
+      uri = Schema.toUri(this.rootId, uri)
     }
     const found = await this.getQuads({ subject: uri, predicate: SpecialNodes.comment })
-    if (_.isNil(found) || found.length === 0) {
+    if (!found || found.length === 0) {
       return null
     }
     return found[0].value
@@ -237,27 +245,27 @@ class OntologyStore {
    * @returns {Promise<unknown>}
    */
   getObjectPropertyQuads(propertyName, includeCommentAndLabel = true) {
-    const node = schema.toUri(this.rootId, propertyName)
+    const node = Schema.toUri(this.rootId, propertyName)
     return new Promise(async (resolve, reject) => {
       const domainQuads = await this.getQuads({ subject: node, predicate: SpecialNodes.domain })
       let domains = []
-      if (!_.isNil(domainQuads)) {
+      if (domainQuads) {
         domains = domainQuads.map((q) => q.object.id)
       }
       const rangeQuads = await this.getQuads({ subject: node, predicate: SpecialNodes.range })
       let ranges = []
-      if (!_.isNil(rangeQuads)) {
+      if (rangeQuads) {
         ranges = rangeQuads.map((q) => q.object.id)
       }
       const label = includeCommentAndLabel ? await this.getFirstLabel(node) : null
       const comment = includeCommentAndLabel ? await this.getFirstComment(node) : null
-      const quads = schema.getObjectPropertyQuads(
+      const quads = Schema.getObjectPropertyQuads(
         this.rootId,
         propertyName,
         domains,
         ranges,
         label,
-        comment
+        comment,
       )
       resolve(quads)
     })
@@ -270,16 +278,16 @@ class OntologyStore {
    * @returns {Promise<unknown>}
    */
   getDataPropertyQuads(propertyName, includeCommentAndLabel = true) {
-    const node = schema.toUri(this.rootId, propertyName)
+    const node = Schema.toUri(this.rootId, propertyName)
     return new Promise(async (resolve, reject) => {
       const domainQuads = await this.getQuads({ subject: node, predicate: SpecialNodes.domain })
       let domains = []
-      if (!_.isNil(domainQuads)) {
+      if (domainQuads) {
         domains = domainQuads.map((q) => q.object.id)
       }
       const label = includeCommentAndLabel ? await this.getFirstLabel(node) : null
       const comment = includeCommentAndLabel ? await this.getFirstComment(node) : null
-      const quads = schema.getDataPropertyQuads(this.rootId, propertyName, domains, label, comment)
+      const quads = Schema.getDataPropertyQuads(this.rootId, propertyName, domains, label, comment)
       resolve(quads)
     })
   }
@@ -291,17 +299,17 @@ class OntologyStore {
    * @returns {Promise<Array>}
    */
   getClassQuads(className, includeCommentAndLabel = true) {
-    const node = schema.toUri(this.rootId, className)
+    const node = Schema.toUri(this.rootId, className)
     return new Promise(async (resolve, reject) => {
       let parentClassName = null
       const parentQuad = await this.getQuads({ subject: node, predicate: SpecialNodes.subClassOf })
-      if (!_.isNil(parentQuad) && parentQuad.length > 0) {
+      if (parentQuad && parentQuad.length > 0) {
         // we'll ignore multiple inheritance
         parentClassName = parentQuad[0].object
       }
       const label = includeCommentAndLabel ? await this.getFirstLabel(node) : null
       const comment = includeCommentAndLabel ? await this.getFirstComment(node) : null
-      const quads = schema.getClassQuads(this.rootId, className, parentClassName, label, comment)
+      const quads = Schema.getClassQuads(this.rootId, className, parentClassName, label, comment)
       resolve(quads)
     })
   }
@@ -312,25 +320,24 @@ class OntologyStore {
    * @returns {Promise<Array>}
    */
   getDataPropertyUrisOfClass(className) {
-    let classId, classNode
-    if (schema.isNamedNode(className)) {
-      classNode = className
+    let classId
+    if (isNamedNode(className)) {
       classId = className.id
     } else {
-      classNode = schema.toUri(this.rootId, className)
+      const classNode = Schema.toUri(this.rootId, className)
       classId = classNode.id
     }
     return new Promise(async (resolve, reject) => {
       const allProps = await this.getDataPropertyUris()
       const classProps = new Set()
-      if (_.isNil(allProps) || allProps.length === 0) {
+      if (!allProps || allProps.length === 0) {
         return resolve(classProps)
       }
       for (let i = 0; i < allProps.length; i++) {
         const propUri = allProps[i]
         const propNode = namedNode(propUri)
         const domQuads = await this.getQuads({ subject: propNode, predicate: SpecialNodes.domain })
-        if (_.isNil(domQuads)) {
+        if (!domQuads) {
           continue
         }
         domQuads.forEach((q) => {
@@ -349,25 +356,24 @@ class OntologyStore {
    * @returns {Promise<Array>}
    */
   getObjectPropertyUrisOfClass(className) {
-    let classId, classNode
-    if (schema.isNamedNode(className)) {
-      classNode = className
+    let classId
+    if (isNamedNode(className)) {
       classId = className.id
     } else {
-      classNode = schema.toUri(this.rootId, className)
+      const classNode = Schema.toUri(this.rootId, className)
       classId = classNode.id
     }
     return new Promise(async (resolve, reject) => {
       const allProps = await this.getObjectPropertyUris()
       const classProps = new Set()
-      if (_.isNil(allProps) || allProps.length === 0) {
+      if (!allProps || allProps.length === 0) {
         return resolve(classProps)
       }
       for (let i = 0; i < allProps.length; i++) {
         const propUri = allProps[i]
         const propNode = namedNode(propUri)
         const domQuads = await this.getQuads({ subject: propNode, predicate: SpecialNodes.domain })
-        if (_.isNil(domQuads)) {
+        if (!domQuads) {
           continue
         }
         domQuads.forEach((q) => {
@@ -386,7 +392,7 @@ class OntologyStore {
         predicate: SpecialNodes.a,
         object: SpecialNodes.owlDatatypeProperty,
       })
-      if (_.isNil(quads)) {
+      if (!quads) {
         resolve([])
       } else {
         resolve(quads.map((q) => q.subject.id))
@@ -400,7 +406,7 @@ class OntologyStore {
         predicate: SpecialNodes.a,
         object: SpecialNodes.owlObjectProperty,
       })
-      if (_.isNil(quads)) {
+      if (!quads) {
         resolve([])
       } else {
         resolve(quads.map((q) => q.subject.id))
@@ -412,18 +418,23 @@ class OntologyStore {
    * Adds an ontology class to the ontology.
    * @param className the name of the new class or named node (allows for non-root classes).
    * @param parentClassName optional parent class
-   * @returns {PromiseLike<Array>}
+   * @returns {Promise<void>}
    */
   async addClass(className, parentClassName = null, label = null, comment = null) {
+    await this.store.open()
     await this.ensureDoesNotExist(className)
-    if (_.isNil(parentClassName)) {
-      return this.store.put(schema.getClassQuads(this.rootId, className, null, label, comment))
+    if (!parentClassName) {
+      const classQuads = Schema.getClassQuads(this.rootId, className, null, label, comment)
+      return this.store.multiPut(classQuads)
     } else {
-      return this.store.put(schema.getClassQuads(this.rootId, parentClassName)).then(() => {
-        return this.store.put(
-          schema.getClassQuads(this.rootId, className, parentClassName, label, comment)
-        )
-      })
+      return this.store
+        .multiPut(Schema.getClassQuads(this.rootId, parentClassName))
+        .then(() => {
+          return this.store.multiPut(
+            Schema.getClassQuads(this.rootId, className, parentClassName, label, comment),
+          )
+        })
+        .then(() => this.store.close())
     }
   }
 
@@ -437,14 +448,17 @@ class OntologyStore {
    * @returns {Promise}
    */
   async addObjectProperty(propertyName, domain, range, label = null, comment = null) {
+    await this.store.open()
     await this.ensureDoesNotExist(propertyName)
     propertyName = this.ensureParameter(propertyName, 'propertyName')
     domain = this.ensureParameter(domain, 'domain')
     range = this.ensureParameter(range, 'range')
 
-    return this.store.put(
-      schema.getObjectPropertyQuads(this.rootId, propertyName, domain, range, label, comment)
-    )
+    return this.store
+      .multiPut(
+        Schema.getObjectPropertyQuads(this.rootId, propertyName, domain, range, label, comment),
+      )
+      .then(() => this.store.close())
   }
 
   /**
@@ -456,13 +470,14 @@ class OntologyStore {
    * @returns {Promise}
    */
   async addDatatypeProperty(propertyName, domain, label = null, comment = null) {
+    await this.store.open()
     propertyName = this.ensureParameter(propertyName, 'propertyName')
     domain = this.ensureParameter(domain, 'domain')
     await this.ensureDoesNotExist(propertyName)
 
-    return this.store.put(
-      schema.getDataPropertyQuads(this.rootId, propertyName, domain, label, comment)
-    )
+    return this.store
+      .multiPut(Schema.getDataPropertyQuads(this.rootId, propertyName, domain, label, comment))
+      .then(() => this.store.close())
   }
 
   /**
@@ -472,10 +487,10 @@ class OntologyStore {
    * @returns {*}
    */
   ensureParameter(s, name) {
-    if (_.isNil(s)) {
+    if (!s) {
       throw new Error(`Got nil parameter '${name}'.`)
     }
-    if (!_.isString(s) && !isNamedNode(s)) {
+    if (typeof s !== 'string' && !isNamedNode(s)) {
       throw new Error(`Expected parameter '${name}' to be a string or a node.`)
     }
     if (isNamedNode(s)) {
@@ -490,9 +505,8 @@ class OntologyStore {
    * @returns {Promise<boolean>}
    */
   classExists(className) {
-    const schema = require('../knwl/ontology').Schema
     return new Promise((resolve, reject) => {
-      const node = schema.toUri(this.rootId, className)
+      const node = Schema.toUri(this.rootId, className)
       const found = []
       this.store
         .match(node, SpecialNodes.a, SpecialNodes.owlClass)
@@ -502,16 +516,16 @@ class OntologyStore {
         .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', (q) => {
+        .on('end', () => {
           resolve(found.length > 0)
         })
     })
   }
 
-  objectPropertyExists(propertyName) {
-    const schema = require('../knwl/ontology').Schema
+  async objectPropertyExists(propertyName) {
+    await this.store.open()
     return new Promise((resolve, reject) => {
-      const node = schema.toUri(this.rootId, propertyName)
+      const node = Schema.toUri(this.rootId, propertyName)
       const found = []
       this.store
         .match(node, SpecialNodes.a, SpecialNodes.owlObjectProperty)
@@ -521,16 +535,19 @@ class OntologyStore {
         .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', (q) => {
+        .on('end', () => {
           resolve(found.length > 0)
         })
+    }).then((exists) => {
+      this.store.close()
+      return exists
     })
   }
 
-  dataPropertyExists(propertyName) {
-    const schema = require('../knwl/ontology').Schema
+  async dataPropertyExists(propertyName) {
+    await this.store.open()
     return new Promise((resolve, reject) => {
-      const node = schema.toUri(this.rootId, propertyName)
+      const node = Schema.toUri(this.rootId, propertyName)
       const found = []
       this.store
         .match(node, SpecialNodes.a, SpecialNodes.owlDatatypeProperty)
@@ -540,25 +557,28 @@ class OntologyStore {
         .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', (q) => {
+        .on('end', () => {
           resolve(found.length > 0)
         })
+    }).then((exists) => {
+      this.store.close()
+      return exists
     })
   }
 
   async ensureDoesNotExist(uri) {
-    uri = schema.toUri(this.rootId, uri)
+    uri = Schema.toUri(this.rootId, uri)
     const found = await this.getOntologyType(uri)
-    if (!_.isNil(found)) {
+    if (found) {
       throw new Error(`An ontology object with Uri '${uri}' already exists with type '${found}'.`)
     }
   }
 
   getOntologyType(uri) {
-    if (_.isNil(uri)) {
+    if (!uri) {
       throw new Error('Missing Uri parameter.')
     }
-    if (_.isString(uri)) {
+    if (typeof uri === 'string') {
       if (!uri.startsWith('http')) {
         throw new Error('The Uri parameter should be a http address.')
       }
@@ -576,13 +596,13 @@ class OntologyStore {
         .on('data', (quad) => {
           found.push(quad)
         })
-        .on('end', (q) => {
+        .on('end', () => {
           switch (found.length) {
             case 0:
               resolve(null)
               break
             case 1:
-              resolve(schema.toShortForm(this.rootId, found[0].object.id))
+              resolve(Schema.toShortForm(this.rootId, found[0].object.id))
               break
             default:
               // this one is problematic, having multiple inheritance makes things complicated
@@ -618,5 +638,3 @@ class OntologyStore {
     }
   }
 }
-
-module.exports = OntologyStore

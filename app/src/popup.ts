@@ -2,11 +2,12 @@ import {
   GraphComponent,
   IEdge,
   ILabelModelParameter,
+  ILabelOwner,
   IModelItem,
   Point,
   SimpleLabel,
   Size,
-} from 'yfiles'
+} from '@yfiles/yfiles'
 
 /**
  * This class adds an HTML panel on top of the contents of the GraphComponent that can
@@ -18,17 +19,18 @@ import {
  * the position of the pop-up.
  */
 export default class HTMLPopupSupport {
+  private $currentItem: IModelItem | null
+  private $dirty: boolean
+
   /**
    * Constructor that takes the graphComponent, the container div element and an ILabelModelParameter
    * to determine the relative position of the popup.
-   * @param {GraphComponent} graphComponent
-   * @param {HTMLElement} div
-   * @param {ILabelModelParameter} labelModelParameter
    */
-  constructor(graphComponent, div, labelModelParameter) {
-    this.graphComponent = graphComponent
-    this.labelModelParameter = labelModelParameter
-    this.$div = div
+  constructor(
+    private graphComponent: GraphComponent,
+    public div: HTMLElement,
+    public labelModelParameter: ILabelModelParameter,
+  ) {
     this.$currentItem = null
     this.$dirty = false
 
@@ -40,28 +42,12 @@ export default class HTMLPopupSupport {
   }
 
   /**
-   * Sets the container {@link HTMLPopupSupport#div div element}.
-   * @type {HTMLElement}
-   */
-  set div(value) {
-    this.$div = value
-  }
-
-  /**
-   * Gets the container {@link HTMLPopupSupport#div div element}.
-   * @type {HTMLElement}
-   */
-  get div() {
-    return this.$div
-  }
-
-  /**
    * Sets the {@link IModelItem item} to display information for.
    * Setting this property to a value other than null shows the pop-up.
    * Setting the property to null hides the pop-up.
    * @type {IModelItem}
    */
-  set currentItem(value) {
+  set currentItem(value: IModelItem | null) {
     if (value === this.$currentItem) {
       return
     }
@@ -77,7 +63,7 @@ export default class HTMLPopupSupport {
    * Gets the {@link IModelItem item} to display information for.
    * @type {IModelItem}
    */
-  get currentItem() {
+  get currentItem(): IModelItem | null {
     return this.$currentItem
   }
 
@@ -103,24 +89,27 @@ export default class HTMLPopupSupport {
    */
   registerListeners() {
     // Adds listener for viewport changes
-    this.graphComponent.addViewportChangedListener((sender, propertyChangedEventArgs) => {
+    this.graphComponent.addEventListener('viewport-changed', (_) => {
       if (this.currentItem) {
         this.dirty = true
       }
     })
 
     // Adds listeners for node bounds changes
-    this.graphComponent.graph.addNodeLayoutChangedListener((node, oldLayout) => {
+    this.graphComponent.graph.addEventListener('node-layout-changed', (node, _) => {
       if (
-        ((this.currentItem && this.currentItem === node) || IEdge.isInstance(this.currentItem)) &&
-        (node === this.currentItem.sourcePort.owner || node === this.currentItem.targetPort.owner)
+        this.currentItem &&
+        (this.currentItem === node ||
+          (this.currentItem instanceof IEdge &&
+            (node === this.currentItem.sourcePort.owner ||
+              node === this.currentItem.targetPort.owner)))
       ) {
         this.dirty = true
       }
     })
 
     // Adds listener for updates of the visual tree
-    this.graphComponent.addUpdatedVisualListener((sender, eventArgs) => {
+    this.graphComponent.addEventListener('updated-visual', (_) => {
       if (this.currentItem && this.dirty) {
         this.dirty = false
         this.updateLocation()
@@ -143,8 +132,8 @@ export default class HTMLPopupSupport {
    * Hides this pop-up.
    */
   hide() {
-    const parent = this.div.parentNode
-    const popupClone = this.div.cloneNode(true)
+    const parent = this.div.parentNode!
+    const popupClone = this.div.cloneNode(true) as Element
     popupClone.setAttribute('class', `${popupClone.getAttribute('class')} popupContentClone`)
     parent.appendChild(popupClone)
     // fade the clone out, then remove it from the DOM. Both actions need to be timed.
@@ -163,22 +152,24 @@ export default class HTMLPopupSupport {
    * {@link HTMLPopupSupport#labelModelParameter}. Currently, this implementation does not support rotated pop-ups.
    */
   updateLocation() {
-    if (!this.currentItem && !this.labelModelParameter) {
+    if (!this.currentItem || !this.labelModelParameter) {
       return
     }
     const width = this.div.clientWidth
     const height = this.div.clientHeight
     const zoom = this.graphComponent.zoom
 
-    const dummyLabel = new SimpleLabel(this.currentItem, '', this.labelModelParameter)
-    if (this.labelModelParameter.supports(dummyLabel)) {
-      dummyLabel.preferredSize = new Size(width / zoom, height / zoom)
-      const newLayout = this.labelModelParameter.model.getGeometry(
-        dummyLabel,
-        this.labelModelParameter
-      )
-      this.setLocation(newLayout.anchorX, newLayout.anchorY - (height + 10) / zoom, width, height)
-    }
+    const dummyLabel = new SimpleLabel(
+      this.currentItem as ILabelOwner,
+      '',
+      this.labelModelParameter,
+    )
+    dummyLabel.preferredSize = new Size(width / zoom, height / zoom)
+    const newLayout = this.labelModelParameter.model.getGeometry(
+      dummyLabel,
+      this.labelModelParameter,
+    )
+    this.setLocation(newLayout.anchorX, newLayout.anchorY - (height + 10) / zoom, width, height)
   }
 
   /**
@@ -188,9 +179,9 @@ export default class HTMLPopupSupport {
    * @param {number} width
    * @param {number} height
    */
-  setLocation(x, y, width, height) {
+  setLocation(x: number, y: number, width: number, height: number) {
     // Calculate the view coordinates since we have to place the div in the regular HTML coordinate space
-    const viewPoint = this.graphComponent.toViewCoordinates(new Point(x, y))
+    const viewPoint = this.graphComponent.worldToViewCoordinates(new Point(x, y))
     const gcSize = this.graphComponent.innerSize
     const padding = 15
     const left = Math.min(gcSize.width - width - padding, Math.max(padding, viewPoint.x))
